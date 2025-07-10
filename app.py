@@ -28,7 +28,7 @@ c = st.text_input("Enter c")
 if st.button("Upload to GitHub"):
     # Step 1: Load existing data from GitHub
     try:
-        existing_df = pd.read_csv(raw_url)
+        existing_df = pd.read_csv(url)
     except:
         existing_df = pd.DataFrame(columns=["a", "b", "c"])  # If file doesn't exist yet
 
