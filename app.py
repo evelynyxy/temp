@@ -26,39 +26,21 @@ b = st.text_input("Enter b")
 c = st.text_input("Enter c")
 
 if st.button("Upload to GitHub"):
-    # Step 1: Load existing data from GitHub
-    try:
-        existing_df = pd.read_csv(url)
-    except:
-        existing_df = pd.DataFrame(columns=["a", "b", "c"])  # If file doesn't exist yet
+    df = pd.DataFrame([{"a": a, "b": b, "c": c}])
+    csv = df.to_csv(index=False)
+    content = base64.b64encode(csv.encode()).decode()
 
-    # Step 2: Append new row
-    new_row = pd.DataFrame([{"a": a, "b": b, "c": c}])
-    updated_df = pd.concat([existing_df, new_row], ignore_index=True)
-
-    # Step 3: Convert to CSV and encode in base64
-    csv_content = updated_df.to_csv(index=False)
-    content_encoded = base64.b64encode(csv_content.encode()).decode()
-
-    # Step 4: Get SHA of existing file (required by GitHub API)
+    url = "https://api.github.com/repos/evelynyxy/temp/contents/data2.csv"
     headers = {"Authorization": f"token {st.secrets['github']['token']}"}
-    sha = None
-    get_resp = requests.get(github_api_url, headers=headers)
-    if get_resp.status_code == 200:
-        sha = get_resp.json()["sha"]
 
-    # Step 5: Upload updated file to GitHub
     payload = {
-        "message": "Append new row to data2.csv",
-        "content": content_encoded,
-        "branch": "main",
-        "sha": sha  # Required to update existing file
+        "message": "Add data.csv",
+        "content": content,
+        "branch": "main"
     }
 
-    put_resp = requests.put(github_api_url, headers=headers, json=payload)
-
-    if put_resp.status_code in [200, 201]:
-        st.success("Data appended to GitHub successfully!")
+    r = requests.put(url, headers=headers, json=payload)
+    if r.status_code in [200, 201]:
+        st.success("data Uploaded!")
     else:
-        st.error(f"Failed to upload. Status: {put_resp.status_code}, Message: {put_resp.text}")
-
+        st.error("Failed to upload")
